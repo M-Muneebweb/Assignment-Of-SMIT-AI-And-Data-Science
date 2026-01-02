@@ -1,0 +1,348 @@
+<!-- templates/index.html -->
+<!doctype html>
+<html lang="hi">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Face Recognition</title>
+  <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+        
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+            transform: translateY(-2px);
+        }
+        
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+        }
+        
+        .upload-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px;
+            stroke: #667eea;
+        }
+        
+        .upload-text {
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+        }
+        
+        .upload-hint {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        #file-input {
+            display: none;
+        }
+        
+        .preview-area {
+            display: none;
+            text-align: center;
+        }
+        
+        .preview-area.active {
+            display: block;
+        }
+        
+        .preview-image {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .file-name {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-content {
+            display: flex;
+            gap: 30px;
+            align-items: start;
+        }
+        
+        .result-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .result-info {
+            flex: 1;
+        }
+        
+        .result-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .result-value {
+            color: #667eea;
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+        
+        .back-btn {
+            padding: 12px 24px;
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .back-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .card, .result-card {
+                padding: 25px;
+            }
+            
+            .result-content {
+                flex-direction: column;
+            }
+            
+            .result-image {
+                width: 100%;
+                max-width: 300px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/element_sdk.js" type="text/javascript"></script>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   {% if not prediction %} 
+   <div class="header">
+    <h1>🔍 Face Recognition</h1>
+    <p>Upload an image to identify faces using AI</p>
+   </div>
+   <div class="card">
+    <form method="POST" enctype="multipart/form-data" id="upload-form">
+     <div class="upload-area" id="upload-area"><input type="file" name="image" accept="image/*" required id="file-input">
+      <div id="upload-prompt">
+       <svg class="upload-icon" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+       </svg>
+       <p class="upload-text"><strong>Click to upload</strong> or drag and drop</p>
+       <p class="upload-hint">PNG, JPG या JPEG (MAX. 10MB)</p>
+      </div>
+      <div class="preview-area" id="preview-area"><img id="preview-image" class="preview-image" alt="Preview">
+       <p class="file-name" id="file-name"></p>
+      </div>
+     </div><button type="submit" class="submit-btn" id="submit-btn"> <span id="btn-text">Analyze Image</span> </button>
+    </form>
+   </div> {% endif %} {% if prediction %} 
+   <div class="header">
+    <h1>✅ Recognition Complete</h1>
+   </div>
+   <div class="result-card">
+    <div class="result-content"><img src="{{ img_path }}" class="result-image" alt="Analyzed face">
+     <div class="result-info">
+      <p class="result-label">Recognition Result</p>
+      <p class="result-value">{{ prediction }}</p><a href="/" class="back-btn">Analyze Another Image</a>
+     </div>
+    </div>
+   </div> {% endif %}
+  </div>
+  <script>
+        const fileInput = document.getElementById('file-input');
+        const uploadArea = document.getElementById('upload-area');
+        const uploadPrompt = document.getElementById('upload-prompt');
+        const previewArea = document.getElementById('preview-area');
+        const previewImage = document.getElementById('preview-image');
+        const fileName = document.getElementById('file-name');
+        const uploadForm = document.getElementById('upload-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const btnText = document.getElementById('btn-text');
+
+        if (uploadArea) {
+            uploadArea.addEventListener('click', () => {
+                fileInput.click();
+            });
+
+            uploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', () => {
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0 && files[0].type.startsWith('image/')) {
+                    fileInput.files = files;
+                    handleFileSelect(files[0]);
+                }
+            });
+
+            fileInput.addEventListener('change', (e) => {
+                if (e.target.files.length > 0) {
+                    handleFileSelect(e.target.files[0]);
+                }
+            });
+
+            function handleFileSelect(file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImage.src = e.target.result;
+                    fileName.textContent = file.name;
+                    uploadPrompt.style.display = 'none';
+                    previewArea.classList.add('active');
+                };
+                reader.readAsDataURL(file);
+            }
+
+            uploadForm.addEventListener('submit', () => {
+                submitBtn.disabled = true;
+                btnText.innerHTML = '<span class="loading"></span> Analyzing...';
+            });
+        }
+    </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9b78e9f7b0c534e9',t:'MTc2NzM0MjgzMS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
